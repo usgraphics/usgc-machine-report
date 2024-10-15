@@ -234,6 +234,9 @@ get_ip_addr() {
 # Operating System Information
 source /etc/os-release
 os_name="${ID^} ${VERSION} ${VERSION_CODENAME^}"
+if [ "${#os_name}" -gt "$MAX_NAME_LEN" ]; then 
+	os_name="${PRETTY_NAME^}"
+fi
 os_kernel=$({ uname; uname -r; } | tr '\n' ' ')
 
 # Network Information
