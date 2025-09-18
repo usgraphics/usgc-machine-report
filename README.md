@@ -4,7 +4,7 @@ SKU: TR-100, filed under Technical Reports (TR).
 What is it?
 A machine information report used at [United States Graphics Company](https://x.com/usgraphics)
 
-It is a bash script installed a remote server. Basic information about the server is displayed when a user logs in to the server using ssh. It's similar to Neofetch. 
+"Machine Report" is basic information about the server that's displayed when a user logs in to the server using ssh. It's similar to Neofetch.
 
 <img src="https://github.com/usgraphics/TR-100/assets/8161031/2a8412dd-09de-45ff-8dfb-e5c6b6f19212" width="500" />
 
