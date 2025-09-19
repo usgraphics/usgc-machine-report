@@ -12,18 +12,6 @@ A machine information report used at [United States Graphics Company](https://x.
 
 Alpha release, only compatible with Debian systems with ZFS root partition running as `root` user. This is not ready for public use *at all*. But you should totally try to use it. The worst that's going to happen is it'll destroy your system. Your help is appreciated in making this project production worthy.
 
-Todo:
-- [x] Run [Shellcheck](https://www.shellcheck.net/)
-- [ ] Add basic variables that user can set to customize the system at the top. Encourage users to just edit the source code, even if they don't know what they are doing.
-- [ ] Add guards for checking ZFS system, otherwise use `lsblk` or something native for disk info.
-- [ ] Support multiple disks and `zpools`—may be just let the user add a section themselves for their specific system using a template.
-- [ ] Modularize code so that subsystems can be turned off or on using args/flags.
-
-Long term todo:
-- [ ] Add support for non-Debian based systems. Primarily Ubuntu, RHEL/CentOS, Arch, FreeBSD and macOS.
-- [ ] Allow support for multiple nics
-- [ ] Ping test? Seems like a bad idea but useful to know the health of the tubes.
-
 # Software Philosophy
 Since it is a bash script, you've got the source code. Just modify that for your needs. No need for any abstractions, directly edit the code. No modules, no DSL, no config files, none of it. Single file for easy deployment. Only abstraction that's acceptable is variables at the top of the script to customize the system, but it should stay minimal. 
 
