@@ -114,12 +114,19 @@ PRINT_DIVIDER() {
             local right_symbol="┤"
     esac
 
+    # Data line format: "│ NAME(13) │ DATA │"
+    # Middle symbol should align with the middle │ at position: 1(│) + 1(space) + 13(name) + 1(space) = 16
+    local middle_position=$((1 + 1 + MAX_NAME_LEN + 1))  # = 16
+
     local length=$((CURRENT_LEN+MAX_NAME_LEN+BORDERS_AND_PADDING))
     local divider="$left_symbol"
-    for (( i = 0; i < length - 3; i++ )); do
-        divider+="─"
-        if [ "$i" -eq 14 ]; then
+    # Loop for (length - 2) iterations to account for left and right symbols
+    for (( i = 0; i < length - 2; i++ )); do
+        # After adding left_symbol, we're at position 1, so i=0 corresponds to position 1
+        if [ "$i" -eq $((middle_position - 1)) ]; then
             divider+="$middle_symbol"
+        else
+            divider+="─"
         fi
     done
     divider+="$right_symbol"
@@ -131,11 +138,9 @@ PRINT_DATA() {
     local data="$2"
     local max_data_len=$CURRENT_LEN
 
-    # Pad name
+    # Pad name - always pad to MAX_NAME_LEN for consistent alignment
     local name_len=${#name}
-    if (( name_len < MIN_NAME_LEN )); then
-        name=$(printf "%-${MIN_NAME_LEN}s" "$name")
-    elif (( name_len > MAX_NAME_LEN )); then
+    if (( name_len > MAX_NAME_LEN )); then
         name=$(echo "$name" | cut -c 1-$((MAX_NAME_LEN-3)))...
     else
         name=$(printf "%-${MAX_NAME_LEN}s" "$name")
@@ -143,26 +148,15 @@ PRINT_DATA() {
 
     # Truncate or pad data
     local data_len=${#data}
-    if (( data_len >= MAX_DATA_LEN || data_len == MAX_DATA_LEN-1 )); then
-        data=$(echo "$data" | cut -c 1-$((MAX_DATA_LEN-3-2)))...
+    if (( data_len > max_data_len )); then
+        # Truncate and then pad to max_data_len
+        local truncated="$(echo "$data" | cut -c 1-$((max_data_len-3)))..."
+        data=$(printf "%-${max_data_len}s" "$truncated")
     else
         data=$(printf "%-${max_data_len}s" "$data")
     fi
 
     printf "│ %-${MAX_NAME_LEN}s │ %s │\n" "$name" "$data"
-}
-
-PRINT_FOOTER() {
-    local length=$((CURRENT_LEN+MAX_NAME_LEN+BORDERS_AND_PADDING))
-    local footer="└"
-    for (( i = 0; i < length - 3; i++ )); do
-        footer+="─"
-        if [ "$i" -eq 14 ]; then
-            footer+="┴"
-        fi
-    done
-    footer+="┘"
-    printf '%s\n' "$footer"
 }
 
 bar_graph() {
@@ -299,19 +293,32 @@ else
 fi
 
 # Last login and Uptime
-last_login=$(lastlog -u "$USER")
-last_login_ip=$(echo "$last_login" | awk 'NR==2 {print $3}')
-
-# Check if last_login_ip is an IP address
-if [[ "$last_login_ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    last_login_ip_present=1
-    last_login_time=$(echo "$last_login" | awk 'NR==2 {print $6, $7, $10, $8}')
+# Try lastlog2 first (Ubuntu 25.04+), then fall back to lastlog
+if command -v lastlog2 &> /dev/null; then
+    last_login=$(lastlog2 show --user "$USER" 2>/dev/null)
+elif command -v lastlog &> /dev/null; then
+    last_login=$(lastlog -u "$USER" 2>/dev/null)
 else
-    last_login_time=$(echo "$last_login" | awk 'NR==2 {print $4, $5, $8, $6}')
-    # Check for **Never logged in** edge case
-    if [ "$last_login_time" = "in**" ]; then
-        last_login_time="Never logged in"
+    last_login=""
+fi
+
+if [ -n "$last_login" ]; then
+    last_login_ip=$(echo "$last_login" | awk 'NR==2 {print $3}')
+
+    # Check if last_login_ip is an IP address
+    if [[ "$last_login_ip" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+        last_login_ip_present=1
+        last_login_time=$(echo "$last_login" | awk 'NR==2 {print $6, $7, $10, $8}')
+    else
+        last_login_time=$(echo "$last_login" | awk 'NR==2 {print $4, $5, $8, $6}')
+        # Check for **Never logged in** edge case
+        if [ "$last_login_time" = "in**" ]; then
+            last_login_time="Never logged in"
+        fi
     fi
+else
+    last_login_time="Unknown"
+    last_login_ip=""
 fi
 
 sys_uptime=$(uptime -p | sed 's/up\s*//; s/\s*day\(s*\)/d/; s/\s*hour\(s*\)/h/; s/\s*minute\(s*\)/m/')
