@@ -274,7 +274,6 @@ mem_total=$(grep 'MemTotal' /proc/meminfo | awk '{print $2}')
 mem_available=$(grep 'MemAvailable' /proc/meminfo | awk '{print $2}')
 mem_used=$((mem_total - mem_available))
 mem_percent=$(awk -v used="$mem_used" -v total="$mem_total" 'BEGIN { printf "%.2f", (used / total) * 100 }')
-mem_percent=$(printf "%.2f" "$mem_percent")
 mem_total_gb=$(echo "$mem_total" | awk '{ printf "%.2f", $1 / (1024 * 1024) }') # (From Ki to Gi units)
 mem_available_gb=$(echo "$mem_available" | awk '{ printf "%.2f", $1 / (1024 * 1024) }') # (From Ki to Gi units) Not used currently
 mem_used_gb=$(echo "$mem_used" | awk '{ printf "%.2f", $1 / (1024 * 1024) }')
