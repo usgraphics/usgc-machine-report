@@ -143,11 +143,10 @@ PRINT_DATA() {
 
     # Truncate or pad data
     local data_len=${#data}
-    if (( data_len >= MAX_DATA_LEN || data_len == MAX_DATA_LEN-1 )); then
-        data=$(echo "$data" | cut -c 1-$((MAX_DATA_LEN-3-2)))...
-    else
-        data=$(printf "%-${max_data_len}s" "$data")
+    if (( data_len > max_data_len )); then
+        data=$(echo "$data" | cut -c 1-$((max_data_len-3)))...
     fi
+    data=$(printf "%-${max_data_len}s" "$data")
 
     printf "│ %-${MAX_NAME_LEN}s │ %s │\n" "$name" "$data"
 }
